@@ -1,38 +1,40 @@
-open class Drink(val name: String, val milk: Int = 0, val sugar: Int = 0, val warmMilk: Int = 0, chocolateSprinkles: Int = 0) {
+abstract class Drink(
+  val name: Type,
+  val milk: Int = 0,
+  val sugar: Int = 0,
+  val warmMilk: Int = 0,
+  val chocolateSprinkles: Int = 0) {
 
-    val chocolateSprinkles: Int
+    enum class Type {
+        TEA, COFFEE
+    }
 
     fun pour(): Drink = this
 
-    override fun toString() = "Drink(" +
-      "name='$name', " +
+    override fun toString() = "$name(" +
       "milk=$milk, " +
       "sugar=$sugar, " +
       "warmMilk=$warmMilk, " +
       "chocolateSprinkles=$chocolateSprinkles)"
-
-    init {
-        if (this.name == "Coffee") {
-            this.chocolateSprinkles = chocolateSprinkles
-        } else {
-            this.chocolateSprinkles = 0
-        }
-    }
 }
 
+class Coffee(milk: Int = 0, sugar: Int = 0, warmMilk: Int = 0, chocolateSprinkles: Int = 0) : Drink(Type.COFFEE, milk, sugar, warmMilk, chocolateSprinkles)
+
+class Tea(milk: Int = 0, sugar: Int = 0, warmMilk: Int = 0) : Drink(Type.TEA, milk, sugar, warmMilk, 0)
+
 fun main(args: Array<String>) {
-    val whiteCoffeeNoSugar = Drink(name = "Coffee", milk = 1, sugar = 0).pour()
+    val whiteCoffeeNoSugar = Coffee(milk = 1, sugar = 0).pour()
     println("poured $whiteCoffeeNoSugar")
 
-    val buildersTea = Drink(name = "Tea", milk = 1, sugar = 3).pour()
+    val buildersTea = Tea(milk = 1, sugar = 3).pour()
     println("poured $buildersTea")
 
-    val warmerCoffee = Drink(name = "Warm coffee", sugar = 2, warmMilk = 2).pour()
+    val warmerCoffee = Coffee(sugar = 2, warmMilk = 2).pour()
     println("poured $warmerCoffee")
 
-    val mocha = Drink(name = "Mocha", sugar = 2, warmMilk = 2, chocolateSprinkles = 3).pour()
+    val mocha = Coffee(sugar = 2, warmMilk = 2, chocolateSprinkles = 3).pour()
     println("poured $mocha")
 
-    val teaWithNoChocolateSprinkles = Drink(name = "Tea", chocolateSprinkles = 10)
+    val teaWithNoChocolateSprinkles = Tea().pour()
     println("poured $teaWithNoChocolateSprinkles")
 }
