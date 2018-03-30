@@ -1,20 +1,23 @@
-open class Drink(
-  val name: String,
-  val milk: Int = 0,
-  val sugar: Int = 0,
-  val warmMilk: Int = 0,
-  val chocolateSprinkles: Int = 0
-) {
+open class Drink(val name: String, val milk: Int = 0, val sugar: Int = 0, val warmMilk: Int = 0, chocolateSprinkles: Int = 0) {
+
+    val chocolateSprinkles: Int
 
     fun pour(): Drink = this
 
-    override fun toString()
-      = "Drink(" +
+    override fun toString() = "Drink(" +
       "name='$name', " +
       "milk=$milk, " +
       "sugar=$sugar, " +
       "warmMilk=$warmMilk, " +
       "chocolateSprinkles=$chocolateSprinkles)"
+
+    init {
+        if (this.name == "Coffee") {
+            this.chocolateSprinkles = chocolateSprinkles
+        } else {
+            this.chocolateSprinkles = 0
+        }
+    }
 }
 
 fun main(args: Array<String>) {
@@ -29,4 +32,7 @@ fun main(args: Array<String>) {
 
     val mocha = Drink(name = "Mocha", sugar = 2, warmMilk = 2, chocolateSprinkles = 3).pour()
     println("poured $mocha")
+
+    val teaWithNoChocolateSprinkles = Drink(name = "Tea", chocolateSprinkles = 10)
+    println("poured $teaWithNoChocolateSprinkles")
 }
