@@ -23,21 +23,27 @@ data class Lemon(val squeezes: Int) : Ingredient {
 }
 
 abstract class Drink {
-    class IsNotFitForConsumptionWithThisIngredient(ingredient: Ingredient, drink: Drink) : Throwable("It is not OK to put $ingredient in ${drink.javaClass.simpleName}")
+    class IsNotFitForConsumptionWithThisIngredient(ingredient: Ingredient, drink: Drink)
+        : Throwable("It is not OK to put $ingredient in ${drink.javaClass.simpleName}")
 
-    private val ingredients: MutableList<Ingredient> = mutableListOf()
+    var ingredients: List<Ingredient> = emptyList()
+        private set
 
     fun withIngredient(ingredient: Ingredient): Drink {
         if (!ingredient.canBeAddedTo(this)) {
             throw Drink.IsNotFitForConsumptionWithThisIngredient(ingredient, this)
         }
 
-        ingredients.add(ingredient)
+        ingredients += ingredient
         return this
     }
+}
 
-    override fun toString()
-      = "pour a ${this.javaClass.simpleName}(${ingredients.joinToString(",")})"
+class OrderPrinter {
+    companion object {
+        fun instructBarista(drink:Drink)
+          = "pour a ${drink.javaClass.simpleName}(${drink.ingredients.joinToString(",")})"
+    }
 }
 
 class Coffee : Drink()
@@ -45,20 +51,28 @@ class Coffee : Drink()
 class Tea : Drink()
 
 fun main(args: Array<String>) {
-    val whiteCoffeeNoSugar = Coffee().withIngredient(Milk(1))
-    println(whiteCoffeeNoSugar)
+    val whiteCoffeeNoSugar = Coffee()
+      .withIngredient(Milk(1))
 
-    val sugaryCoffee = Coffee().withIngredient(Sugar(3))
-    println(sugaryCoffee)
+    println(OrderPrinter.instructBarista(whiteCoffeeNoSugar))
 
-    val warmerCoffee = Coffee().withIngredient(Milk(2, Temperature.WARM)).withIngredient(Sugar(3))
-    println(warmerCoffee)
+    val sugaryCoffee = Coffee()
+      .withIngredient(Sugar(3))
+
+    println(OrderPrinter.instructBarista(sugaryCoffee))
+
+    val warmerCoffee = Coffee()
+      .withIngredient(Milk(2, Temperature.WARM))
+      .withIngredient(Sugar(3))
+
+    println(OrderPrinter.instructBarista(warmerCoffee))
 
     val mocha = Coffee()
       .withIngredient(Milk(2, Temperature.WARM))
       .withIngredient(Sugar(2))
       .withIngredient(ChocolateSprinkles(4))
-    println(mocha)
+
+    println(OrderPrinter.instructBarista(mocha))
 
     val theFancyCoffee = Coffee()
       .withIngredient(Milk(2, Temperature.WARM))
@@ -66,13 +80,17 @@ fun main(args: Array<String>) {
       .withIngredient(ChocolateSprinkles(4))
       .withIngredient(HazelnutSyrup(2))
 
-    println(theFancyCoffee)
+    println(OrderPrinter.instructBarista(theFancyCoffee))
 
-    val buildersTea = Tea().withIngredient(Milk(1)).withIngredient(Sugar(3))
-    println(buildersTea)
+    val buildersTea = Tea()
+      .withIngredient(Milk(1))
+      .withIngredient(Sugar(3))
+
+    println(OrderPrinter.instructBarista(buildersTea))
 
     val lemonTea = Tea().withIngredient(Lemon(1))
-    println(lemonTea)
+
+    println(OrderPrinter.instructBarista(lemonTea))
 
     try {
         Tea().withIngredient(ChocolateSprinkles(2))
