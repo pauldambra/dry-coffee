@@ -4,9 +4,7 @@ enum class Temperature {
 }
 
 interface Ingredient {
-    fun canBeAddedTo(drink: Drink): Boolean {
-        return true
-    }
+    fun canBeAddedTo(drink: Drink) = true
 }
 
 data class Sugar(val spoons: Int) : Ingredient
