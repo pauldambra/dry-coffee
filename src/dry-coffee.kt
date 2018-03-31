@@ -1,40 +1,84 @@
-abstract class Drink(
-  val name: Type,
-  val milk: Int = 0,
-  val sugar: Int = 0,
-  val warmMilk: Int = 0,
-  val chocolateSprinkles: Int = 0) {
 
-    enum class Type {
-        TEA, COFFEE
-    }
-
-    fun pour(): Drink = this
-
-    override fun toString() = "$name(" +
-      "milk=$milk, " +
-      "sugar=$sugar, " +
-      "warmMilk=$warmMilk, " +
-      "chocolateSprinkles=$chocolateSprinkles)"
+enum class Temperature {
+    WARM, COLD
 }
 
-class Coffee(milk: Int = 0, sugar: Int = 0, warmMilk: Int = 0, chocolateSprinkles: Int = 0) : Drink(Type.COFFEE, milk, sugar, warmMilk, chocolateSprinkles)
+interface Ingredient {
+    fun canBeAddedTo(drink: Drink): Boolean {
+        return true
+    }
+}
 
-class Tea(milk: Int = 0, sugar: Int = 0, warmMilk: Int = 0) : Drink(Type.TEA, milk, sugar, warmMilk, 0)
+data class Sugar(val spoons: Int) : Ingredient
+data class Milk(val glugs: Int, val temperature: Temperature = Temperature.COLD) : Ingredient
+
+data class ChocolateSprinkles(val pinches: Int) : Ingredient {
+    override fun canBeAddedTo(drink: Drink) = drink is Coffee
+}
+
+data class HazelnutSyrup(val shots: Int) : Ingredient {
+    override fun canBeAddedTo(drink: Drink) = drink is Coffee
+}
+
+data class Lemon(val squeezes: Int) : Ingredient {
+    override fun canBeAddedTo(drink: Drink) = drink is Tea
+}
+
+abstract class Drink {
+    class IsNotFitForConsumptionWithThisIngredient(ingredient: Ingredient, drink: Drink) : Throwable("It is not OK to put $ingredient in ${drink.javaClass.simpleName}")
+
+    private val ingredients: MutableList<Ingredient> = mutableListOf()
+
+    fun withIngredient(ingredient: Ingredient): Drink {
+        if (!ingredient.canBeAddedTo(this)) {
+            throw Drink.IsNotFitForConsumptionWithThisIngredient(ingredient, this)
+        }
+
+        ingredients.add(ingredient)
+        return this
+    }
+
+    override fun toString()
+      = "pour a ${this.javaClass.simpleName}(${ingredients.joinToString(",")})"
+}
+
+class Coffee : Drink()
+
+class Tea : Drink()
 
 fun main(args: Array<String>) {
-    val whiteCoffeeNoSugar = Coffee(milk = 1, sugar = 0).pour()
-    println("poured $whiteCoffeeNoSugar")
+    val whiteCoffeeNoSugar = Coffee().withIngredient(Milk(1))
+    println(whiteCoffeeNoSugar)
 
-    val buildersTea = Tea(milk = 1, sugar = 3).pour()
-    println("poured $buildersTea")
+    val sugaryCoffee = Coffee().withIngredient(Sugar(3))
+    println(sugaryCoffee)
 
-    val warmerCoffee = Coffee(sugar = 2, warmMilk = 2).pour()
-    println("poured $warmerCoffee")
+    val warmerCoffee = Coffee().withIngredient(Milk(2, Temperature.WARM)).withIngredient(Sugar(3))
+    println(warmerCoffee)
 
-    val mocha = Coffee(sugar = 2, warmMilk = 2, chocolateSprinkles = 3).pour()
-    println("poured $mocha")
+    val mocha = Coffee()
+      .withIngredient(Milk(2, Temperature.WARM))
+      .withIngredient(Sugar(2))
+      .withIngredient(ChocolateSprinkles(4))
+    println(mocha)
 
-    val teaWithNoChocolateSprinkles = Tea().pour()
-    println("poured $teaWithNoChocolateSprinkles")
+    val theFancyCoffee = Coffee()
+      .withIngredient(Milk(2, Temperature.WARM))
+      .withIngredient(Sugar(2))
+      .withIngredient(ChocolateSprinkles(4))
+      .withIngredient(HazelnutSyrup(2))
+
+    println(theFancyCoffee)
+
+    val buildersTea = Tea().withIngredient(Milk(1)).withIngredient(Sugar(3))
+    println(buildersTea)
+
+    val lemonTea = Tea().withIngredient(Lemon(1))
+    println(lemonTea)
+
+    try {
+        Tea().withIngredient(ChocolateSprinkles(2))
+    } catch (e: Drink.IsNotFitForConsumptionWithThisIngredient) {
+        println("excellently did not allow chocolate in tea: $e")
+    }
 }
